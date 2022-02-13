@@ -14,16 +14,16 @@ module "lambda_function" {
     tags = { # map of tags }
 
     function = {
-        # <Function Definition Here (see details below)>
+        # Function Definition Here (see details below)
     }
 
     layer = {
-        # <Layer Definition Here (see details below)>
+        # Layer Definition Here (see details below)
         # IMPORTANT! Only one layer configuration per Lambda is currently supported.
     }
 
     logs = {
-        # <Logging Configuration Here (see details below)>
+        # Logging Configuration Here (see details below)
     }
 }
 ```
