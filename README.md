@@ -5,7 +5,7 @@ Opinionated Terraform Module that creates and manages AWS Lambda Function.
 
 Create AWS Lambda resource by calling the `terraformita/lambda/aws` module:
 
-```
+```terraform
 module "lambda_function" {
     source = "terraformita/lambda/aws"
     version = "0.0.4"  # <--- make sure to specify correct version
@@ -34,7 +34,7 @@ module "lambda_function" {
 
 Define your lambda function by the following parameters inside the `function` block:
 
-```
+```terraform
     function = {
         name = "Name of your Lambda Function"
         zip  = "Path to ZIP archive with Lambda Code"
