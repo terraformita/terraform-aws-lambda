@@ -91,7 +91,7 @@ resource "aws_lambda_function" "lambda" {
 resource "aws_lambda_layer_version" "layer" {
   count               = local.layer == null ? 0 : 1
   filename            = local.layer.zip
-  layer_name          = local.layer.name
+  layer_name          = "${local.stage}-${local.lambda.name}-layer"
   source_code_hash    = try(local.layer.hash, filebase64sha256(local.layer.zip))
   compatible_runtimes = local.layer.compatible_runtimes
 }

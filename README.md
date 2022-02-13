@@ -125,7 +125,7 @@ Define Lambda Layer using the **optional** `layer` configuration block:
 ```terraform
   layer = {
     zip                 = "Path to ZIP file with the lambda layer"
-    name                = "Name of Lambda Layer"
+    hash                = "(Optional) Hashsum of layer ZIP file"
     compatible_runtimes = ["Array", "of", "Compatible", "Runtimes"]
   }
 ```

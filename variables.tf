@@ -31,7 +31,6 @@ variable "function" {
 
 variable "layer" {
   type = object({
-    name                = string
     zip                 = string
     hash                = optional(string)
     compatible_runtimes = optional(list(string))
