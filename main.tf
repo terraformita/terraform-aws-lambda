@@ -70,7 +70,7 @@ resource "aws_lambda_function" "lambda" {
   runtime          = local.lambda.runtime
   timeout          = local.lambda.timeout
   description      = lookup(local.lambda, "description", "")
-  publish          = lookup(local.lambda, "track_versions", false)
+  publish          = local.lambda.track_versions
 
   dynamic "vpc_config" {
     for_each = local.vpc_config[*]

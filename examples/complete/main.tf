@@ -28,7 +28,7 @@ data "archive_file" "lambda" {
 }
 
 module "lambda" {
-  source = "../"
+  source = "../../"
 
   # General variables definition
   stage = random_pet.stage_name.id
@@ -67,4 +67,8 @@ module "lambda" {
     #
     # kms_key_arn = aws_kms_key.test
   }
+
+  depends_on = [
+    data.archive_file.lambda
+  ]
 }
