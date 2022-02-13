@@ -120,7 +120,7 @@ Define your lambda function by the following parameters inside the `function` bl
 
 ## Layer Definition
 
-Define Lambda Layer using the `layer` configuration block:
+Define Lambda Layer using the **optional** `layer` configuration block:
 
 ```terraform
   layer = {
