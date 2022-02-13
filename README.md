@@ -62,28 +62,26 @@ Define your lambda function by the following parameters inside the `function` bl
             #
             # Example (policy that allows S3 bucket notifications):
             #
-            # bucket-notifications = jsonencode({
-            #    Version = "2012-10-17",
-            #    Statement = [{
-            #        Effect = "Allow",
-            #        Action = [
-            #        "s3:GetBucketNotification"
-            #        ],
-            #        Resource = "arn:aws:s3:::bucket_name",
-            #    }]
-            # })
-            #
+            bucket-notifications = jsonencode({
+                Version = "2012-10-17",
+                Statement = [{
+                    Effect = "Allow",
+                    Action = [
+                        "s3:GetBucketNotification"
+                    ],
+                    Resource = "arn:aws:s3:::bucket_name",
+                }]
+             })            
         }
 
-        policy_attachments = {
-            # (Optional) Map of ARNs of IAM policies to attach to the Lambda function
+        policy_attachments = [
+            # (Optional) Array of ARNs of IAM policies to attach to the Lambda function.
+            # 'AWSLambdaVPCAccessExecutionRole' is attached by default.
             #
             # Example:
-            # policy_attachments = [
-            #    "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-            # ]
-            #
-        }
+            
+            "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        ]
 
         permissions        = {
             # (Optional) Map of lambda invocation permissions 
@@ -91,28 +89,24 @@ Define your lambda function by the following parameters inside the `function` bl
             #
             # For S3 permissions, use "s3_permissions" block.
             #
-            # Example:
-            # permissions = {
-            #    cloudwatch = {
-            #        action        = "lambda:InvokeFunction"
-            #        principal     = "logs.us-east-1.amazonaws.com"
-            #        source_arn    = "ARN of CloudWatch Group"
-            #    }
-            # }
-            #
+            # Example: Allow Lambda invocation from CloudWatch Log Group
+
+            cloudwatch = {
+                action        = "lambda:InvokeFunction"
+                principal     = "logs.us-east-1.amazonaws.com"
+                source_arn    = "ARN of CloudWatch Group"
+            }
         }
 
         s3_permissions = {
             # (Optional) Permissions for S3 buckets to invoke the given Lambda function
             # 
-            # Example:
-            # s3_permissions = {
-            #    some_bucket = {
-            #       principal  = "s3.amazonaws.com"
-            #       source-arn = "arn:aws:s3:::bucket_name"
-            #    }
-            # }
-            #
+            # Example: Allow Lambda Invocation from an S3 bucket
+            
+            some_bucket = {
+                principal  = "s3.amazonaws.com"
+                source_arn = "arn:aws:s3:::bucket_name"
+            }
         }
 
         track_versions     = true|false 
