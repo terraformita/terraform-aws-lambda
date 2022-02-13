@@ -8,10 +8,12 @@ Create AWS Lambda resource by calling the `terraformita/lambda/aws` module:
 ```terraform
 module "lambda_function" {
     source = "terraformita/lambda/aws"
-    version = "0.0.4"  # <--- make sure to specify correct version
+    version = "Module Version"  # <--- make sure to specify correct version
 
     stage  = "Name of Target AWS Environment"
-    tags = { # map of tags }
+    tags = { 
+        # map of tags 
+    }
 
     function = {
         # Function Definition Here (see details below)
@@ -80,7 +82,7 @@ Define your lambda function by the following parameters inside the `function` bl
             #
             # Example:
             
-            "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+            "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
         ]
 
         permissions        = {
@@ -118,4 +120,25 @@ Define your lambda function by the following parameters inside the `function` bl
 
 ## Layer Definition
 
-To be added soon...
+Define Lambda Layer using the `layer` configuration block:
+
+```terraform
+  layer = {
+    zip                 = "Path to ZIP file with the lambda layer"
+    name                = "Name of Lambda Layer"
+    compatible_runtimes = ["Array", "of", "Compatible", "Runtimes"]
+  }
+```
+
+**NOTE.** So far the module supports only one lambda layer configuration.
+
+## Logging Configuration
+
+Define logging configuration using the **optional** `logs` configuration block:
+
+```terraform
+    logs = {
+        log_retention_days = NUMBER_OF_DAYS_TO_RETAIN_LOGS
+        kms_key_arn        = "(Optional) ARN of KMS Key for logs encryption"
+    }
+```
