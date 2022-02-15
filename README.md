@@ -1,5 +1,14 @@
-# terraform-aws-lambda-module
+# AWS Lambda Module
 Opinionated Terraform Module that creates and manages AWS Lambda Function.
+
+### Features
+- Create Lambda Function with 
+- Create Lambda Layer
+- Create Logging Configuration
+- BYOKMS: "Bring Your Own KMS Key" for CloudWatch Log Group logs encryption
+
+### Limitations
+- Currently, the module supports creation of only one Layer
 
 ## Quick Start 
 
