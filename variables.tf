@@ -13,6 +13,7 @@ variable "function" {
     memsize = optional(string)
     timeout = optional(string)
     role    = optional(map(any))
+    policy  = optional(string)
 
     vpc_config = optional(object({
       subnet_ids      = list(string)
