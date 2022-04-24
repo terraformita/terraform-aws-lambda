@@ -44,13 +44,17 @@ module "lambda" {
     zip     = local.zip_path
     handler = "lambda_handler.lambda_handler"
     runtime = "python3.8"
-    memsize = "256"
+    memsize = 128
 
     env = {
       STAGE_NAME    = random_pet.stage_name.id
       FUNCTION_NAME = random_pet.function_name.id
       REGION        = local.region
     }
+
+    policies           = {}
+    permissions        = {}
+    policy_attachments = []
   }
 
   # Lambda Layer configuration
@@ -69,6 +73,8 @@ module "lambda" {
   }
 
   depends_on = [
-    data.archive_file.lambda
+    data.archive_file.lambda,
+    random_pet.stage_name,
+    random_pet.function_name
   ]
 }

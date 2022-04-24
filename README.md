@@ -2,7 +2,7 @@
 Opinionated Terraform Module that creates and manages AWS Lambda Function.
 
 ### Features
-- Create Lambda Function with 
+- Create Lambda Function 
 - Create Lambda Layer
 - Create Logging Configuration
 - BYOKMS: "Bring Your Own KMS Key" for CloudWatch Log Group logs encryption
