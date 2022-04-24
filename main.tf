@@ -14,6 +14,7 @@ locals {
     memsize = try(var.function.memsize, null) == null ? 128 : var.function.memsize
     timeout = try(var.function.timeout, null) == null ? 900 : var.function.timeout
     env     = try(var.function.env, {})
+    hash    = try(var.function.hash, null) == null ? filebase64sha256(var.function.zip) : var.function.hash
 
     policy             = try(var.function.policy, null) == null ? jsonencode(local.policy_template) : jsonencode(var.function.policy)
     policies           = merge(try(var.function.policies, {}), {})
@@ -55,7 +56,7 @@ resource "aws_cloudwatch_log_group" "lambda" {
 resource "aws_lambda_function" "lambda" {
   function_name    = local.function_name
   filename         = var.function.zip
-  source_code_hash = try(var.function.hash, filebase64sha256(local.function.zip))
+  source_code_hash = local.function.hash
   layers           = local.layer == null ? [] : [aws_lambda_layer_version.layer[0].arn]
   handler          = var.function.handler
   role             = try(var.function.role.arn, aws_iam_role.lambda.arn)
@@ -91,7 +92,7 @@ resource "aws_lambda_layer_version" "layer" {
   count               = local.layer == null ? 0 : 1
   filename            = local.layer.zip
   layer_name          = "${local.function_name}-layer"
-  source_code_hash    = try(local.layer.hash, filebase64sha256(local.layer.zip))
+  source_code_hash    = try(local.layer.hash, null) == null ? filebase64sha256(var.layer.zip) : local.layer.hash
   compatible_runtimes = local.layer.compatible_runtimes
 }
 
