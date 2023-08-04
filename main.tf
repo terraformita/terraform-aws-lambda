@@ -1,12 +1,11 @@
-terraform {
-  experiments = [module_variable_optional_attrs]
-}
-
 data "aws_caller_identity" "this" {}
 
 locals {
   stage = var.stage
-  tags  = var.tags
+  tags = merge(
+    var.tags,
+    { Name = "${local.function_name}" }
+  )
 
   function_name = "${local.stage}-${var.function.name}"
 
@@ -47,10 +46,7 @@ resource "aws_cloudwatch_log_group" "lambda" {
   retention_in_days = local.logs.log_retention_days
   kms_key_id        = local.logs.kms_key_arn
 
-  tags = merge(
-    local.tags,
-    { Name = "${local.function_name}" }
-  )
+  tags = local.tags
 }
 
 resource "aws_lambda_function" "lambda" {
@@ -99,6 +95,8 @@ resource "aws_lambda_layer_version" "layer" {
 resource "aws_iam_role" "lambda" {
   name               = "${local.function_name}-role"
   assume_role_policy = local.function.policy
+
+  tags = local.tags
 }
 
 resource "aws_iam_role_policy" "cloudwatch" {
@@ -150,8 +148,16 @@ resource "aws_lambda_permission" "s3_permissions" {
   source_arn = each.value.source_arn
 }
 
-resource "aws_iam_role_policy" "policies" {
+resource "aws_iam_policy" "policies" {
   for_each = local.function.policies
+  name     = "${local.function_name}-${each.key}"
+  path     = "/"
   policy   = local.function.policies[each.key]
-  role     = try(var.function.role.id, aws_iam_role.lambda.id)
+  tags     = local.tags
+}
+
+resource "aws_iam_role_policy_attachment" "attachments" {
+  for_each   = aws_iam_policy.policies
+  role       = try(var.function.role.name, aws_iam_role.lambda.name)
+  policy_arn = each.value.arn
 }
