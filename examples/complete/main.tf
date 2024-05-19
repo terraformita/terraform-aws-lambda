@@ -41,10 +41,11 @@ module "lambda" {
     name        = random_pet.function_name.id
     description = "Example Hello World Lambda Function"
 
-    zip     = local.zip_path
-    handler = "lambda_handler.lambda_handler"
-    runtime = "python3.8"
-    memsize = 128
+    zip           = local.zip_path
+    handler       = "lambda_handler.lambda_handler"
+    runtime       = "python3.8"
+    architectures = ["arm64"]
+    memsize       = 128
 
     env = {
       STAGE_NAME    = random_pet.stage_name.id
@@ -77,8 +78,9 @@ module "lambda" {
 
   # Lambda Layer configuration
   layer = {
-    zip                 = "${path.module}/lambda/sdk-layer.zip"
-    compatible_runtimes = ["python3.8"]
+    zip                      = "${path.module}/lambda/sdk-layer.zip"
+    compatible_runtimes      = ["python3.8"]
+    compatible_architectures = ["x86_64", "arm64"]
   }
 
   # Lambda logs retention and encryption configuration
