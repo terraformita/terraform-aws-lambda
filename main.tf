@@ -10,10 +10,11 @@ locals {
   function_name = "${local.stage}-${var.function.name}"
 
   function = {
-    memsize = try(var.function.memsize, null) == null ? 128 : var.function.memsize
-    timeout = try(var.function.timeout, null) == null ? 900 : var.function.timeout
-    env     = try(var.function.env, {})
-    hash    = try(var.function.hash, null) == null ? filebase64sha256(var.function.zip) : var.function.hash
+    memsize       = try(var.function.memsize, null) == null ? 128 : var.function.memsize
+    timeout       = try(var.function.timeout, null) == null ? 900 : var.function.timeout
+    env           = try(var.function.env, {})
+    hash          = try(var.function.hash, null) == null ? filebase64sha256(var.function.zip) : var.function.hash
+    architectures = var.function.architectures
 
     policy             = try(var.function.policy, null) == null ? jsonencode(local.policy_template) : jsonencode(var.function.policy)
     policies           = merge(try(var.function.policies, {}), {})
@@ -22,6 +23,15 @@ locals {
     s3_permissions     = merge(try(var.function.s3_permissions, {}), {})
     track_versions     = lookup(var.function, "track_versions", false)
     vpc_config         = try(var.function.vpc_config, null) == null ? [] : [var.function.vpc_config]
+  }
+
+  default_layer = {
+    "${local.function_name}-default" = try(var.layer, null)
+  }
+
+  layers = {
+    for k, v in merge(local.default_layer, var.layers) :
+    k => v if v != null
   }
 
   layer = var.layer
@@ -53,11 +63,12 @@ resource "aws_lambda_function" "lambda" {
   function_name    = local.function_name
   filename         = var.function.zip
   source_code_hash = local.function.hash
-  layers           = local.layer == null ? [] : [aws_lambda_layer_version.layer[0].arn]
+  layers           = [for layer in aws_lambda_layer_version.layer : layer.arn]
   handler          = var.function.handler
   role             = try(var.function.role.arn, aws_iam_role.lambda.arn)
   memory_size      = local.function.memsize
   runtime          = var.function.runtime
+  architectures    = local.function.architectures
   timeout          = local.function.timeout
   description      = try(local.function.description, "")
   publish          = local.function.track_versions
@@ -85,11 +96,12 @@ resource "aws_lambda_function" "lambda" {
 }
 
 resource "aws_lambda_layer_version" "layer" {
-  count               = local.layer == null ? 0 : 1
-  filename            = local.layer.zip
-  layer_name          = "${local.function_name}-layer"
-  source_code_hash    = try(local.layer.hash, null) == null ? filebase64sha256(var.layer.zip) : local.layer.hash
-  compatible_runtimes = local.layer.compatible_runtimes
+  for_each                 = local.layers
+  filename                 = each.value.zip
+  layer_name               = each.key
+  source_code_hash         = try(each.value.hash, filebase64sha256(each.value.zip))
+  compatible_runtimes      = each.value.compatible_runtimes
+  compatible_architectures = each.value.compatible_architectures
 }
 
 resource "aws_iam_role" "lambda" {

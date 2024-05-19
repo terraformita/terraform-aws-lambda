@@ -5,15 +5,16 @@ variable "stage" {
 
 variable "function" {
   type = object({
-    name    = string
-    zip     = string
-    hash    = optional(string)
-    handler = string
-    runtime = string
-    memsize = optional(string)
-    timeout = optional(string)
-    role    = optional(map(any))
-    policy  = optional(string)
+    name          = string
+    zip           = string
+    hash          = optional(string)
+    handler       = string
+    runtime       = string
+    architectures = optional(list(string), ["x86_64"])
+    memsize       = optional(string)
+    timeout       = optional(string)
+    role          = optional(map(any))
+    policy        = optional(string)
 
     vpc_config = optional(object({
       subnet_ids      = list(string)
@@ -32,13 +33,25 @@ variable "function" {
 
 variable "layer" {
   type = object({
-    zip                 = string
-    hash                = optional(string)
-    compatible_runtimes = optional(list(string))
+    zip                      = string
+    hash                     = optional(string)
+    compatible_runtimes      = optional(list(string))
+    compatible_architectures = optional(list(string), ["x86_64"])
   })
 
   default     = null
   description = "Lambda layer definition. Currently ONLY ONE layer definition per lambda function is supported"
+}
+
+variable "layers" {
+  type = map(object({
+    zip                      = string
+    hash                     = optional(string)
+    compatible_runtimes      = optional(list(string))
+    compatible_architectures = optional(list(string), ["x86_64"])
+  }))
+  default     = {}
+  description = "List of Lambda layers to be attached to the function"
 }
 
 variable "logs" {
