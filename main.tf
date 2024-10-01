@@ -142,7 +142,7 @@ resource "aws_iam_role_policy_attachment" "policy_attachments" {
 }
 
 resource "aws_lambda_permission" "permissions" {
-  for_each      = lookup(local.function, "permissions", {})
+  for_each      = local.function.permissions
   function_name = aws_lambda_function.lambda.function_name
 
   principal  = local.function.permissions[each.key]["principal"]
