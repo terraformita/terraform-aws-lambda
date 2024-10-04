@@ -133,12 +133,16 @@ resource "aws_iam_role_policy" "cloudwatch" {
 resource "aws_iam_role_policy_attachment" "default" {
   role       = try(var.function.role.name, aws_iam_role.lambda.name)
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+
+  depends_on = [aws_lambda_function.lambda]
 }
 
 resource "aws_iam_role_policy_attachment" "policy_attachments" {
   for_each   = toset(local.function.policy_attachments)
   role       = try(var.function.role.name, aws_iam_role.lambda.name)
   policy_arn = each.key
+
+  depends_on = [aws_lambda_function.lambda]
 }
 
 resource "aws_lambda_permission" "permissions" {
@@ -148,6 +152,8 @@ resource "aws_lambda_permission" "permissions" {
   principal  = local.function.permissions[each.key]["principal"]
   action     = try(local.function.permissions[each.key]["action"], "lambda:InvokeFunction")
   source_arn = try(local.function.permissions[each.key]["source_arn"], aws_lambda_function.lambda.arn)
+
+  depends_on = [aws_lambda_function.lambda]
 }
 
 resource "aws_lambda_permission" "s3_permissions" {
@@ -158,6 +164,8 @@ resource "aws_lambda_permission" "s3_permissions" {
   action     = try(each.value.action, "lambda:InvokeFunction")
   principal  = try(each.value.principal, "s3.amazonaws.com")
   source_arn = each.value.source_arn
+
+  depends_on = [aws_lambda_function.lambda]
 }
 
 resource "aws_iam_policy" "policies" {
@@ -166,6 +174,8 @@ resource "aws_iam_policy" "policies" {
   path     = "/"
   policy   = local.function.policies[each.key]
   tags     = local.tags
+
+  depends_on = [aws_lambda_function.lambda]
 }
 
 resource "aws_iam_role_policy_attachment" "attachments" {
