@@ -11,10 +11,12 @@ variable "function" {
     handler       = string
     runtime       = string
     architectures = optional(list(string), ["x86_64"])
-    memsize       = optional(string)
-    timeout       = optional(string)
+    memsize       = optional(string, "128")
+    timeout       = optional(string, "900")
     role          = optional(map(any))
     policy        = optional(string)
+
+    ignore_code_changes = optional(bool, false)
 
     vpc_config = optional(object({
       subnet_ids      = list(string)
