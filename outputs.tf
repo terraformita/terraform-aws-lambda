@@ -1,9 +1,9 @@
 output "lambda_function" {
   value = {
-    arn           = aws_lambda_function.lambda.arn
-    version       = aws_lambda_function.lambda.version
-    qualified_arn = aws_lambda_function.lambda.qualified_arn
-    function_name = aws_lambda_function.lambda.function_name
+    arn           = module.lambda.lambda_function.arn
+    version       = module.lambda.lambda_function.version
+    qualified_arn = module.lambda.lambda_function.qualified_arn
+    function_name = module.lambda.lambda_function.function_name
     role_arn      = aws_iam_role.lambda.arn
     role_id       = aws_iam_role.lambda.id
   }
