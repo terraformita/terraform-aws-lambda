@@ -10,8 +10,15 @@ locals {
   function_name = "${local.stage}-${var.function.name}"
 
   function = {
-    memsize       = try(var.function.memsize, null) == null ? 128 : var.function.memsize
-    timeout       = try(var.function.timeout, null) == null ? 900 : var.function.timeout
+    name        = local.function_name
+    zip         = var.function.zip
+    handler     = var.function.handler
+    runtime     = var.function.runtime
+    description = var.function.description
+    publish     = var.function.track_versions
+
+    memsize       = var.function.memsize
+    timeout       = var.function.timeout
     env           = try(var.function.env, {})
     hash          = try(var.function.hash, null) == null ? filebase64sha256(var.function.zip) : var.function.hash
     architectures = var.function.architectures
@@ -23,7 +30,6 @@ locals {
     policy_attachments = try(var.function.policy_attachments, null) == null ? [] : var.function.policy_attachments
     permissions        = merge(try(var.function.permissions, {}), {})
     s3_permissions     = merge(try(var.function.s3_permissions, {}), {})
-    track_versions     = lookup(var.function, "track_versions", false)
     vpc_config         = try(var.function.vpc_config, null) == null ? [] : [var.function.vpc_config]
   }
 
@@ -54,65 +60,22 @@ locals {
 }
 
 resource "aws_cloudwatch_log_group" "lambda" {
-  name              = "/aws/lambda/${aws_lambda_function.lambda.function_name}"
+  name              = "/aws/lambda/${module.lambda.lambda_function.function_name}"
   retention_in_days = local.logs.log_retention_days
   kms_key_id        = local.logs.kms_key_arn
 
   tags = local.tags
 }
 
-resource "aws_lambda_function" "lambda" {
-  function_name    = local.function_name
-  filename         = var.function.zip
-  source_code_hash = local.function.hash
-  layers           = [for layer in aws_lambda_layer_version.layer : layer.arn]
-  handler          = var.function.handler
-  role             = try(var.function.role.arn, aws_iam_role.lambda.arn)
-  memory_size      = local.function.memsize
-  runtime          = var.function.runtime
-  architectures    = local.function.architectures
-  timeout          = local.function.timeout
-  description      = try(local.function.description, "")
-  publish          = local.function.track_versions
+module "lambda" {
+  source = "./modules/lambda"
 
-  dynamic "vpc_config" {
-    for_each = local.function.vpc_config[*]
-    content {
-      subnet_ids         = vpc_config.value.subnet_ids
-      security_group_ids = vpc_config.value.security_groups
-    }
-  }
+  function = local.function
+  layers   = local.layers
+  role     = var.function.role == null ? aws_iam_role.lambda : var.function.role
+  tags     = var.tags
 
-  dynamic "environment" {
-    for_each = local.function.env[*]
-    content {
-      variables = environment.value
-    }
-  }
-
-  tags = var.tags
-
-  dynamic "lifecycle" {
-    for_each = local.function.ignore_code_changes ? [1] : []
-    content {
-      ignore_changes = [
-        source_code_hash
-      ]
-    }
-  }
-
-  depends_on = [
-    aws_iam_role.lambda
-  ]
-}
-
-resource "aws_lambda_layer_version" "layer" {
-  for_each                 = local.layers
-  filename                 = each.value.zip
-  layer_name               = each.key
-  source_code_hash         = try(each.value.hash, filebase64sha256(each.value.zip))
-  compatible_runtimes      = each.value.compatible_runtimes
-  compatible_architectures = each.value.compatible_architectures
+  depends_on = [aws_iam_role.lambda]
 }
 
 resource "aws_iam_role" "lambda" {
@@ -145,7 +108,7 @@ resource "aws_iam_role_policy_attachment" "default" {
   role       = try(var.function.role.name, aws_iam_role.lambda.name)
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 
-  depends_on = [aws_lambda_function.lambda]
+  depends_on = [module.lambda]
 }
 
 resource "aws_iam_role_policy_attachment" "policy_attachments" {
@@ -153,30 +116,30 @@ resource "aws_iam_role_policy_attachment" "policy_attachments" {
   role       = try(var.function.role.name, aws_iam_role.lambda.name)
   policy_arn = each.key
 
-  depends_on = [aws_lambda_function.lambda]
+  depends_on = [module.lambda]
 }
 
 resource "aws_lambda_permission" "permissions" {
   for_each      = local.function.permissions
-  function_name = aws_lambda_function.lambda.function_name
+  function_name = module.lambda.lambda_function.function_name
 
   principal  = local.function.permissions[each.key]["principal"]
   action     = try(local.function.permissions[each.key]["action"], "lambda:InvokeFunction")
-  source_arn = try(local.function.permissions[each.key]["source_arn"], aws_lambda_function.lambda.arn)
+  source_arn = try(local.function.permissions[each.key]["source_arn"], module.lambda.lambda_function.arn)
 
-  depends_on = [aws_lambda_function.lambda]
+  depends_on = [module.lambda]
 }
 
 resource "aws_lambda_permission" "s3_permissions" {
   for_each       = local.function.s3_permissions
-  function_name  = aws_lambda_function.lambda.function_name
+  function_name  = module.lambda.lambda_function.function_name
   source_account = data.aws_caller_identity.this.account_id
 
   action     = try(each.value.action, "lambda:InvokeFunction")
   principal  = try(each.value.principal, "s3.amazonaws.com")
   source_arn = each.value.source_arn
 
-  depends_on = [aws_lambda_function.lambda]
+  depends_on = [module.lambda]
 }
 
 resource "aws_iam_policy" "policies" {
@@ -186,7 +149,7 @@ resource "aws_iam_policy" "policies" {
   policy   = local.function.policies[each.key]
   tags     = local.tags
 
-  depends_on = [aws_lambda_function.lambda]
+  depends_on = [module.lambda]
 }
 
 resource "aws_iam_role_policy_attachment" "attachments" {

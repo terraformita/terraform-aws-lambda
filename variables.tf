@@ -6,13 +6,14 @@ variable "stage" {
 variable "function" {
   type = object({
     name          = string
+    description   = optional(string, "")
     zip           = string
     hash          = optional(string)
     handler       = string
     runtime       = string
     architectures = optional(list(string), ["x86_64"])
     memsize       = optional(string, "128")
-    timeout       = optional(string, "900")
+    timeout       = optional(number, 900)
     role          = optional(map(any))
     policy        = optional(string)
 
@@ -23,12 +24,12 @@ variable "function" {
       security_groups = list(string)
     }))
 
-    env                = optional(map(any))
-    policies           = optional(map(any))
-    policy_attachments = optional(list(string))
-    permissions        = optional(map(any))
-    s3_permissions     = optional(map(any))
-    track_versions     = optional(bool)
+    env                = optional(map(any), {})
+    policies           = optional(map(any), {})
+    policy_attachments = optional(list(string), [])
+    permissions        = optional(map(any), {})
+    s3_permissions     = optional(map(any), {})
+    track_versions     = optional(bool, false)
   })
   description = "(Required) All parameters needed to describe lambda function: name, zip archive with the code, VPC configuration, policies, invocation permissions, and such"
 }
