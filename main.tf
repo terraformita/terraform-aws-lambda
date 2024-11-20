@@ -107,16 +107,12 @@ resource "aws_iam_role_policy" "cloudwatch" {
 resource "aws_iam_role_policy_attachment" "default" {
   role       = try(var.function.role.name, aws_iam_role.lambda.name)
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-
-  depends_on = [module.lambda]
 }
 
 resource "aws_iam_role_policy_attachment" "policy_attachments" {
   for_each   = toset(local.function.policy_attachments)
   role       = try(var.function.role.name, aws_iam_role.lambda.name)
   policy_arn = each.key
-
-  depends_on = [module.lambda]
 }
 
 resource "aws_lambda_permission" "permissions" {
