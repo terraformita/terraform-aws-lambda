@@ -23,7 +23,8 @@ locals {
     hash          = try(var.function.hash, null) == null ? filebase64sha256(var.function.zip) : var.function.hash
     architectures = var.function.architectures
 
-    ignore_code_changes = try(var.function.ignore_code_changes, false)
+    ignore_code_changes  = try(var.function.ignore_code_changes, false)
+    reserved_concurrency = try(var.function.reserved_concurrency, -1)
 
     policy             = try(var.function.policy, null) == null ? jsonencode(local.policy_template) : jsonencode(var.function.policy)
     policies           = merge(try(var.function.policies, {}), {})
