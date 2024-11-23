@@ -17,7 +17,8 @@ variable "function" {
     role          = optional(map(any))
     policy        = optional(string)
 
-    ignore_code_changes = optional(bool, false)
+    ignore_code_changes  = optional(bool, false)
+    reserved_concurrency = optional(number, -1)
 
     vpc_config = optional(object({
       subnet_ids      = list(string)

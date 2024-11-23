@@ -10,7 +10,8 @@ variable "function" {
     memsize       = optional(string, "128")
     timeout       = optional(number, 900)
 
-    ignore_code_changes = optional(bool, false)
+    ignore_code_changes  = optional(bool, false)
+    reserved_concurrency = optional(number, -1)
 
     vpc_config = optional(list(object({
       subnet_ids      = list(string)

@@ -1,4 +1,3 @@
-
 resource "aws_lambda_function" "lambda" {
   count = var.function.ignore_code_changes ? 0 : 1
 
@@ -14,6 +13,8 @@ resource "aws_lambda_function" "lambda" {
   timeout          = var.function.timeout
   description      = try(var.function.description, "")
   publish          = var.function.track_versions
+
+  reserved_concurrent_executions = var.function.reserved_concurrency
 
   dynamic "vpc_config" {
     for_each = var.function.vpc_config[*]
@@ -48,6 +49,8 @@ resource "aws_lambda_function" "lambda_ignore_src_changes" {
   timeout          = var.function.timeout
   description      = try(var.function.description, "")
   publish          = var.function.track_versions
+
+  reserved_concurrent_executions = var.function.reserved_concurrency
 
   dynamic "vpc_config" {
     for_each = var.function.vpc_config[*]
