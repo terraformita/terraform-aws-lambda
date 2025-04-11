@@ -1,3 +1,9 @@
+terraform {
+  required_providers {
+    aws = ">= 3.40.0"
+  }
+}
+
 data "aws_caller_identity" "this" {}
 
 locals {
