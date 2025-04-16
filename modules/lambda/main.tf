@@ -33,7 +33,7 @@ resource "aws_lambda_function" "lambda" {
 
   dynamic "dead_letter_config" {
     for_each = (
-      var.function.dead_letter_config != null && length(trimspace(var.function.dead_letter_config)) > 0 ? [1] : []
+      var.function.dead_letter_config != null && var.function.dead_letter_config != "" ? [1] : []
     )
     content {
       target_arn = var.function.dead_letter_config
@@ -78,7 +78,7 @@ resource "aws_lambda_function" "lambda_ignore_src_changes" {
 
   dynamic "dead_letter_config" {
     for_each = (
-      var.function.dead_letter_config != null && length(trimspace(var.function.dead_letter_config)) > 0 ? [1] : []
+      var.function.dead_letter_config != null && var.function.dead_letter_config != "" ? [1] : []
     )
     content {
       target_arn = var.function.dead_letter_config
