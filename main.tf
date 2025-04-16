@@ -4,6 +4,7 @@ terraform {
   }
 }
 
+data "aws_partition" "this" {}
 data "aws_caller_identity" "this" {}
 
 locals {
@@ -83,7 +84,7 @@ module "lambda" {
   role     = var.function.role == null ? aws_iam_role.lambda : var.function.role
   tags     = var.tags
 
-  depends_on = [aws_iam_role.lambda]
+  depends_on = [aws_iam_role_policy_attachment.attachments]
 }
 
 resource "aws_iam_role" "lambda" {
@@ -121,6 +122,13 @@ resource "aws_iam_role_policy_attachment" "policy_attachments" {
   for_each   = toset(local.function.policy_attachments)
   role       = try(var.function.role.name, aws_iam_role.lambda.name)
   policy_arn = each.key
+
+  depends_on = [aws_iam_policy.policies]
+}
+
+resource "aws_iam_role_policy_attachment" "xray" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:${data.aws_partition.this.partition}:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 
 resource "aws_lambda_permission" "permissions" {
@@ -131,7 +139,7 @@ resource "aws_lambda_permission" "permissions" {
   action     = try(local.function.permissions[each.key]["action"], "lambda:InvokeFunction")
   source_arn = try(local.function.permissions[each.key]["source_arn"], module.lambda.lambda_function.arn)
 
-  depends_on = [module.lambda]
+  depends_on = [aws_iam_role.lambda]
 }
 
 resource "aws_lambda_permission" "s3_permissions" {
@@ -142,8 +150,6 @@ resource "aws_lambda_permission" "s3_permissions" {
   action     = try(each.value.action, "lambda:InvokeFunction")
   principal  = try(each.value.principal, "s3.amazonaws.com")
   source_arn = each.value.source_arn
-
-  depends_on = [module.lambda]
 }
 
 resource "aws_iam_policy" "policies" {
@@ -152,8 +158,6 @@ resource "aws_iam_policy" "policies" {
   path     = "/"
   policy   = local.function.policies[each.key]
   tags     = local.tags
-
-  depends_on = [module.lambda]
 }
 
 resource "aws_iam_role_policy_attachment" "attachments" {
