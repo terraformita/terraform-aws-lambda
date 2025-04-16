@@ -31,6 +31,7 @@ variable "function" {
     permissions        = optional(map(any), {})
     s3_permissions     = optional(map(any), {})
     track_versions     = optional(bool, false)
+    dead_letter_config = optional(string)
   })
   description = "(Required) All parameters needed to describe lambda function: name, zip archive with the code, VPC configuration, policies, invocation permissions, and such"
 }
