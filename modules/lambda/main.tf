@@ -31,6 +31,15 @@ resource "aws_lambda_function" "lambda" {
     }
   }
 
+  dynamic "dead_letter_config" {
+    for_each = (
+      var.function.dead_letter_config != null && var.function.dead_letter_config != "" ? [1] : []
+    )
+    content {
+      target_arn = var.function.dead_letter_config
+    }
+  }
+
   tags = var.tags
 }
 
@@ -64,6 +73,15 @@ resource "aws_lambda_function" "lambda_ignore_src_changes" {
     for_each = var.function.env[*]
     content {
       variables = environment.value
+    }
+  }
+
+  dynamic "dead_letter_config" {
+    for_each = (
+      var.function.dead_letter_config != null && var.function.dead_letter_config != "" ? [1] : []
+    )
+    content {
+      target_arn = var.function.dead_letter_config
     }
   }
 

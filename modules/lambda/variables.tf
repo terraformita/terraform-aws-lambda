@@ -18,8 +18,9 @@ variable "function" {
       security_groups = list(string)
     })), [])
 
-    env            = optional(map(any))
-    track_versions = optional(bool)
+    env                = optional(map(any))
+    track_versions     = optional(bool)
+    dead_letter_config = optional(string)
   })
   description = "(Required) All parameters needed to describe lambda function: name, zip archive with the code, VPC configuration, policies, invocation permissions, and such"
 }
