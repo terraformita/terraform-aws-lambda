@@ -17,7 +17,7 @@ resource "aws_lambda_function" "lambda" {
   reserved_concurrent_executions = var.function.reserved_concurrency
 
   dynamic "vpc_config" {
-    for_each = var.function.vpc_config[*]
+    for_each = var.function.vpc_config
     content {
       subnet_ids         = vpc_config.value.subnet_ids
       security_group_ids = vpc_config.value.security_groups
@@ -62,7 +62,7 @@ resource "aws_lambda_function" "lambda_ignore_src_changes" {
   reserved_concurrent_executions = var.function.reserved_concurrency
 
   dynamic "vpc_config" {
-    for_each = var.function.vpc_config[*]
+    for_each = var.function.vpc_config
     content {
       subnet_ids         = vpc_config.value.subnet_ids
       security_group_ids = vpc_config.value.security_groups

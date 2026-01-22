@@ -38,7 +38,8 @@ locals {
     policy_attachments = try(var.function.policy_attachments, null) == null ? [] : var.function.policy_attachments
     permissions        = merge(try(var.function.permissions, {}), {})
     s3_permissions     = merge(try(var.function.s3_permissions, {}), {})
-    vpc_config         = try(var.function.vpc_config, null) == null ? [] : [var.function.vpc_config]
+    vpc_config         = var.function.vpc_config == null ? [] : [var.function.vpc_config]
+
     dead_letter_config = try(var.function.dead_letter_config, null)
   }
 
