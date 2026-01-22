@@ -94,9 +94,9 @@ resource "aws_iam_role" "lambda" {
   tags = local.tags
 }
 
-resource "aws_iam_role_policy" "cloudwatch" {
+resource "aws_iam_policy" "cloudwatch" {
   name = "${local.function_name}-cloudwatch"
-  role = try(var.function.role.id, aws_iam_role.lambda.id)
+
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -111,6 +111,11 @@ resource "aws_iam_role_policy" "cloudwatch" {
       ]
     }]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch" {
+  role       = try(var.function.role.name, aws_iam_role.lambda.name)
+  policy_arn = aws_iam_policy.cloudwatch.arn
 }
 
 resource "aws_iam_role_policy_attachment" "default" {
